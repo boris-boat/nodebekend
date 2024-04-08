@@ -1,7 +1,7 @@
 import express from "express";
 import Sequelize, { json } from "sequelize";
 import { Customer } from "./models/user.js";
-import {cors} from "cors"
+import cors from "cors";
 import { config } from "./config/config.js";
 const sequelize = new Sequelize(
   config.database,
@@ -9,6 +9,7 @@ const sequelize = new Sequelize(
   config.password,
   {
     host: config.host,
+    port: config.port,
     dialect: config.dialect,
   }
 );
@@ -55,12 +56,22 @@ app.get("/users", async (req, res) => {
   }
 });
 app.post("/login", async (req, res) => {
+  if (!req.body.username || req.body.password) {
+    res.status(500).json({ message: "Invalid request sent" });
+    return;
+  }
   const user = await Customer.findOne({
     where: { username: req.body.username },
   });
+  if (!user) {
+    res.status(500).json({ message: "Wrong credentials" });
+    return;
+  }
   if (user.dataValues.password === req.body.password) {
     res.status(201).json({ message: "User found", user: user.dataValues });
+    return;
   } else {
     res.status(500).json({ message: "Wrong credentials" });
+    return;
   }
 });
