@@ -78,24 +78,6 @@ app.post("/login", async (req, res) => {
     return;
   }
 });
-app.post("/gettodos", async (req, res) => {
-  if (!req.body.id) {
-    res.status(500).json({ message: "Invalid request sent" });
-    return;
-  }
-  const user = await Customer.findByPk(req.body.id, {
-    include: {
-      model: Todo,
-    },
-  });
-  if (!user) {
-    res
-      .status(500)
-      .json({ message: "User ID not sent or invalid ID provided" });
-    return;
-  }
-  res.status(201).json(user.Todos);
-});
 
 app.post("/createtodo", async (req, res) => {
   if (!req.body.text || !req.body.id) {
@@ -103,7 +85,9 @@ app.post("/createtodo", async (req, res) => {
   }
 
   try {
-    const user = await Customer.findByPk(req.body.id);
+    const user = await Customer.findByPk(req.body.id, {
+      include: Todo,
+    });
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
@@ -113,7 +97,7 @@ app.post("/createtodo", async (req, res) => {
       CustomerId: user.id,
     });
 
-    res.status(201).json({ message: "Todo created!", todo: newTodo });
+    res.status(201).json({ message: "Todo created!", user: user });
   } catch (error) {
     console.error("Error creating todo:", error);
     res.status(500).json({ message: "Error creating todo" });
