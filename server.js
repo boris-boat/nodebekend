@@ -1,6 +1,6 @@
 import express from "express";
 import Sequelize, { json } from "sequelize";
-import { Customer } from "./models/user.js";
+import { Customer, Todo } from "./models/user.js";
 import cors from "cors";
 import { config } from "./config/config.js";
 const sequelize = new Sequelize(
@@ -25,7 +25,10 @@ app.get("/", (req, res) => {
 app.listen(port, async () => {
   try {
     await sequelize.authenticate();
-    await Customer.sync();
+    await sequelize.sync();
+    console.log("base synced");
+    await Customer.sync({ alter: true });
+    await Todo.sync({ alter: true });
     console.log("Connection has been established successfully.");
   } catch (error) {
     console.error("Unable to connect to the database:", error);
@@ -73,5 +76,46 @@ app.post("/login", async (req, res) => {
   } else {
     res.status(500).json({ message: "Wrong credentials" });
     return;
+  }
+});
+app.post("/gettodos", async (req, res) => {
+  if (!req.body.id) {
+    res.status(500).json({ message: "Invalid request sent" });
+    return;
+  }
+  const user = await Customer.findByPk(req.body.id, {
+    include: {
+      model: Todo,
+    },
+  });
+  if (!user) {
+    res
+      .status(500)
+      .json({ message: "User ID not sent or invalid ID provided" });
+    return;
+  }
+  res.status(201).json(user.Todos);
+});
+
+app.post("/createtodo", async (req, res) => {
+  if (!req.body.text || !req.body.id) {
+    return res.status(400).json({ message: "Missing todo text or user ID" });
+  }
+
+  try {
+    const user = await Customer.findByPk(req.body.id);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const newTodo = await Todo.create({
+      text: req.body.text,
+      CustomerId: user.id,
+    });
+
+    res.status(201).json({ message: "Todo created!", todo: newTodo });
+  } catch (error) {
+    console.error("Error creating todo:", error);
+    res.status(500).json({ message: "Error creating todo" });
   }
 });

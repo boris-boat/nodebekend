@@ -27,3 +27,19 @@ export const Customer = sequelize.define("Customer", {
     allowNull: false,
   },
 });
+export const Todo = sequelize.define("Todo", {
+  id: {
+    type: DataTypes.INTEGER,
+    autoIncrement: true,
+    primaryKey: true,
+  },
+  text: {
+    type: DataTypes.STRING,
+  },
+  isDone: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false,
+  },
+});
+Todo.belongsTo(Customer);
+Customer.hasMany(Todo);
