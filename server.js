@@ -49,22 +49,15 @@ app.post("/register", async (req, res) => {
     }
   }
 });
-app.get("/users", async (req, res) => {
-  try {
-    const users = await Customer.findAll();
-    res.json(users);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Unable to retrieve users" });
-  }
-});
+
 app.post("/login", async (req, res) => {
-  if (!req.body.username || req.body.password) {
+  if (!req.body.username || !req.body.password) {
     res.status(500).json({ message: "Invalid request sent" });
     return;
   }
   const user = await Customer.findOne({
     where: { username: req.body.username },
+    include: Todo,
   });
   if (!user) {
     res.status(500).json({ message: "Wrong credentials" });
