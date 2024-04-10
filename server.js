@@ -64,7 +64,14 @@ app.post("/login", async (req, res) => {
     return;
   }
   if (user.dataValues.password === req.body.password) {
-    res.status(201).json({ message: "User found", user: user.dataValues });
+    res
+      .status(201)
+      .json({
+        message: "User found",
+        username: user.dataValues.username,
+        userId: user.dataValues.id,
+        todos: user.dataValues.Todos,
+      });
     return;
   } else {
     res.status(500).json({ message: "Wrong credentials" });
