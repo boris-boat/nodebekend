@@ -1,5 +1,5 @@
 import express from "express";
-import Sequelize, { json } from "sequelize";
+import Sequelize, { json, where } from "sequelize";
 import { Customer, Todo } from "./models/user.js";
 import cors from "cors";
 import { config } from "./config/config.js";
@@ -64,14 +64,12 @@ app.post("/login", async (req, res) => {
     return;
   }
   if (user.dataValues.password === req.body.password) {
-    res
-      .status(201)
-      .json({
-        message: "User found",
-        username: user.dataValues.username,
-        userId: user.dataValues.id,
-        todos: user.dataValues.Todos,
-      });
+    res.status(201).json({
+      message: "User found",
+      username: user.dataValues.username,
+      userId: user.dataValues.id,
+      todos: user.dataValues.Todos,
+    });
     return;
   } else {
     res.status(500).json({ message: "Wrong credentials" });
@@ -101,5 +99,40 @@ app.post("/createtodo", async (req, res) => {
   } catch (error) {
     console.error("Error creating todo:", error);
     res.status(500).json({ message: "Error creating todo" });
+  }
+});
+app.post("/edittodo", async (req, res) => {
+  try {
+    if (!req.body.id) {
+      return res.status(404).json({ message: "Id not provided" });
+    }
+
+    let todo = await Todo.findByPk(req.body.id);
+    if (!todo) {
+      return res.status(404).json({ message: "Todo not found" });
+    }
+
+    todo.text = req.body.text;
+    await todo.save();
+    res.status(200).json({ message: "Todo updated", todo: todo.dataValues });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Error updating todo" });
+  }
+});
+app.post("/deletetodo", async (req, res) => {
+  try {
+    if (!req.body.id) {
+      return res.status(404).json({ message: "Id not provided" });
+    }
+
+    let todo = await Todo.findByPk(req.body.id);
+    if (!todo) {
+      return res.status(404).json({ message: "Todo not found" });
+    }
+    await todo.destroy();
+    res.status(200).json({ message: "Todo deleted" });
+  } catch (error) {
+    console.log(error);
   }
 });
