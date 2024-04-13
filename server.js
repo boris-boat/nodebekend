@@ -42,17 +42,17 @@ app.post("/register", async (req, res) => {
     res.status(201).json({ message: "User created successfully!" });
   } catch (error) {
     if (error.name === "SequelizeValidationError") {
-      return res.status(400).json({ error: "Validation errors" });
+      return res.status(200).json({ error: "Validation errors" });
     } else {
       console.error(error);
-      res.status(500).json({ error: "Server error" });
+      res.status(200).json({ error: "Server error" });
     }
   }
 });
 
 app.post("/login", async (req, res) => {
   if (!req.body.username || !req.body.password) {
-    res.status(500).json({ message: "Invalid request sent" });
+    res.status(200).json({ message: "Invalid request sent" });
     return;
   }
   const user = await Customer.findOne({
@@ -60,7 +60,7 @@ app.post("/login", async (req, res) => {
     include: Todo,
   });
   if (!user) {
-    res.status(500).json({ message: "Wrong credentials" });
+    res.status(200).json({ message: "Wrong credentials" });
     return;
   }
   if (user.dataValues.password === req.body.password) {
@@ -72,14 +72,14 @@ app.post("/login", async (req, res) => {
     });
     return;
   } else {
-    res.status(500).json({ message: "Wrong credentials" });
+    res.status(200).json({ message: "Wrong credentials" });
     return;
   }
 });
 
 app.post("/createtodo", async (req, res) => {
   if (!req.body.text || !req.body.id) {
-    return res.status(400).json({ message: "Missing todo text or user ID" });
+    return res.status(200).json({ message: "Missing todo text or user ID" });
   }
 
   try {
@@ -87,7 +87,7 @@ app.post("/createtodo", async (req, res) => {
       include: Todo,
     });
     if (!user) {
-      return res.status(404).json({ message: "User not found" });
+      return res.status(200).json({ message: "User not found" });
     }
 
     const newTodo = await Todo.create({
@@ -104,12 +104,12 @@ app.post("/createtodo", async (req, res) => {
 app.post("/edittodo", async (req, res) => {
   try {
     if (!req.body.id) {
-      return res.status(404).json({ message: "Id not provided" });
+      return res.status(200).json({ message: "Id not provided" });
     }
 
     let todo = await Todo.findByPk(req.body.id);
     if (!todo) {
-      return res.status(404).json({ message: "Todo not found" });
+      return res.status(200).json({ message: "Todo not found" });
     }
 
     todo.text = req.body.text;
@@ -123,12 +123,12 @@ app.post("/edittodo", async (req, res) => {
 app.post("/deletetodo", async (req, res) => {
   try {
     if (!req.body.id) {
-      return res.status(404).json({ message: "Id not provided" });
+      return res.status(200).json({ message: "Id not provided" });
     }
 
     let todo = await Todo.findByPk(req.body.id);
     if (!todo) {
-      return res.status(404).json({ message: "Todo not found" });
+      return res.status(200).json({ message: "Todo not found" });
     }
     await todo.destroy();
     res.status(200).json({ message: "Todo deleted" });
