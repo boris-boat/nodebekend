@@ -78,6 +78,7 @@ app.post("/login", async (req, res) => {
 });
 
 app.post("/createtodo", async (req, res) => {
+  console.log(req.body);
   if (!req.body.text || !req.body.id) {
     return res.status(200).json({ message: "Missing todo text or user ID" });
   }
@@ -94,7 +95,7 @@ app.post("/createtodo", async (req, res) => {
       text: req.body.text,
       CustomerId: user.id,
     });
-
+    await user.reload({ include: Todo });
     res.status(201).json({ message: "Todo created!", user: user });
   } catch (error) {
     console.error("Error creating todo:", error);
